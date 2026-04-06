@@ -45,7 +45,7 @@
 //     })
 //   );
 // });
-const CACHE_NAME = 'billing-app-v1';
+const CACHE_NAME = 'billing-app-v2';
 
 // Install
 self.addEventListener('install', (event) => {
