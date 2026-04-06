@@ -9,7 +9,6 @@ const BillingSoftware = () => {
   const [buyerName, setBuyerName] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [showProducts, setShowProducts] = useState(false);
-  const [showBillPreview, setShowBillPreview] = useState(false);
   const [editingFirm, setEditingFirm] = useState(false);
   const [tempFirmName, setTempFirmName] = useState(firmName);
   const [tempFirmLogo, setTempFirmLogo] = useState(firmLogo);
