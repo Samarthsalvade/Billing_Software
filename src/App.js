@@ -171,47 +171,49 @@ const BillingSoftware = () => {
 </html>`;
   };
 
-  const shareInvoice = async () => {
+  const generatePDF = async () => {
     const billNumber = `INV-${Date.now()}`;
     const html = buildHTML(billNumber);
-    const fileName = `Invoice-${billNumber}.html`;
   
-    // 👉 If running on web
-    if (!window.Capacitor || window.Capacitor.getPlatform() === 'web') {
-      const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
+    const element = document.createElement('div');
+    element.innerHTML = html;
+    document.body.appendChild(element);
   
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      a.click();
+    const canvas = await window.html2canvas(element);
+    const imgData = canvas.toDataURL('image/png');
   
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
-      return;
-    }
+    const { jsPDF } = await import('jspdf');
+    const pdf = new jsPDF('p', 'mm', 'a4');
   
-    // 👉 If running on mobile (iOS/Android)
-    try {
-      const encoded = btoa(
-        encodeURIComponent(html).replace(/%([0-9A-F]{2})/g,
-          (_, p1) => String.fromCharCode(parseInt(p1, 16)))
-      );
+    const imgWidth = 210;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  
+    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+  
+    const fileName = `Invoice-${billNumber}.pdf`;
+  
+    // 📱 Mobile (iPhone)
+    if (window.Capacitor && window.Capacitor.getPlatform() !== 'web') {
+      const pdfBase64 = pdf.output('datauristring').split(',')[1];
   
       const result = await Filesystem.writeFile({
         path: fileName,
-        data: encoded,
-        directory: Directory.Cache,
+        data: pdfBase64,
+        directory: Directory.Documents,
       });
   
       await Share.share({
         title: `Invoice ${billNumber}`,
         url: result.uri,
       });
-    } catch (err) {
-      alert("Error sharing file");
+    } 
+    // 🌐 Web
+    else {
+      pdf.save(fileName);
     }
+  
+    document.body.removeChild(element);
   };
-
   const clearBill = () => {
     setBillItems([]);
     setOtherCharges([]);
@@ -479,14 +481,14 @@ const BillingSoftware = () => {
                 </div>
                 <div className="flex gap-3">
                   <button
-                    onClick={shareInvoice}
+                    onClick={generatePDF}
                     className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
                   >
                     <Download size={20} />
                     Download Bill
                   </button>
                   <button
-                    onClick={shareInvoice}
+                    onClick={generatePDF}
                     className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
                   >
                     <Printer size={20} />
