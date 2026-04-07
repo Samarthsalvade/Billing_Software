@@ -220,6 +220,30 @@ const BillingSoftware = () => {
     // ✅ cleanup (important)
     document.body.removeChild(element);
   };
+  const printInvoice = () => {
+    const billNumber = `INV-${Date.now()}`;
+    const html = buildHTML(billNumber);
+  
+    // 🌐 Web → open print popup
+    if (!window.Capacitor || window.Capacitor.getPlatform() === 'web') {
+      const win = window.open('', '_blank');
+      win.document.write(html);
+      win.document.close();
+      win.focus();
+      win.print();
+      return;
+    }
+  
+    // 📱 Mobile → use native print via window
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+  
+    setTimeout(() => {
+      win.print();
+    }, 500);
+  };
   const clearBill = () => {
     setBillItems([]);
     setOtherCharges([]);
@@ -494,7 +518,7 @@ const BillingSoftware = () => {
                     Download Bill
                   </button>
                   <button
-                    onClick={generatePDF}
+                    onClick={printInvoice}
                     className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
                   >
                     <Printer size={20} />
