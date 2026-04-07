@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Settings, FileText, Download, Printer, X, Edit2, Save, ChevronDown, ChevronUp } from 'lucide-react';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
+import html2canvas from 'html2canvas';
 
 const BillingSoftware = () => {
   const [firmName, setFirmName] = useState('Your Firm Name');
@@ -218,6 +219,12 @@ const BillingSoftware = () => {
   
     // ✅ cleanup (important)
     document.body.removeChild(element);
+  };
+  const clearBill = () => {
+    setBillItems([]);
+    setOtherCharges([]);
+    setBuyerName('');
+    setShowOtherCharges(false);
   };
 
   return (
