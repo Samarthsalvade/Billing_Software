@@ -98,7 +98,6 @@ const BillingSoftware = () => {
   const buildHTML = (billNumber) => {
     const date = new Date().toLocaleDateString('en-IN');
     const subtotal = calcSubtotal();
-    const otherTotal = calcOtherChargesTotal();
     const total = calcTotal();
     return `<!DOCTYPE html>
 <html>
