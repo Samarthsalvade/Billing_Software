@@ -175,37 +175,40 @@ const BillingSoftware = () => {
     const billNumber = `INV-${Date.now()}`;
     const html = buildHTML(billNumber);
     const fileName = `Invoice-${billNumber}.html`;
-
+  
+    // 👉 If running on web
+    if (!window.Capacitor || window.Capacitor.getPlatform() === 'web') {
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+  
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+  
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      return;
+    }
+  
+    // 👉 If running on mobile (iOS/Android)
     try {
       const encoded = btoa(
         encodeURIComponent(html).replace(/%([0-9A-F]{2})/g,
           (_, p1) => String.fromCharCode(parseInt(p1, 16)))
       );
+  
       const result = await Filesystem.writeFile({
         path: fileName,
         data: encoded,
         directory: Directory.Cache,
       });
+  
       await Share.share({
         title: `Invoice ${billNumber}`,
         url: result.uri,
-        dialogTitle: 'Save or Share Invoice',
       });
     } catch (err) {
-      // UNIMPLEMENTED = Simulator, use blob download fallback
-      if (err?.code === 'UNIMPLEMENTED') {
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
-      } else {
-        alert(`Share failed: ${err?.message || JSON.stringify(err)}`);
-      }
+      alert("Error sharing file");
     }
   };
 
