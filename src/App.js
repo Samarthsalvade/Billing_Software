@@ -175,11 +175,15 @@ const BillingSoftware = () => {
     const billNumber = `INV-${Date.now()}`;
     const html = buildHTML(billNumber);
   
+    // 👉 Create hidden container (NOT visible)
     const element = document.createElement('div');
+    element.style.position = 'fixed';
+    element.style.left = '-9999px';
     element.innerHTML = html;
+  
     document.body.appendChild(element);
   
-    const canvas = await window.html2canvas(element);
+    const canvas = await html2canvas(element);
     const imgData = canvas.toDataURL('image/png');
   
     const { jsPDF } = await import('jspdf');
@@ -192,7 +196,7 @@ const BillingSoftware = () => {
   
     const fileName = `Invoice-${billNumber}.pdf`;
   
-    // 📱 Mobile (iPhone)
+    // 📱 Mobile
     if (window.Capacitor && window.Capacitor.getPlatform() !== 'web') {
       const pdfBase64 = pdf.output('datauristring').split(',')[1];
   
@@ -212,13 +216,8 @@ const BillingSoftware = () => {
       pdf.save(fileName);
     }
   
+    // ✅ cleanup (important)
     document.body.removeChild(element);
-  };
-  const clearBill = () => {
-    setBillItems([]);
-    setOtherCharges([]);
-    setBuyerName('');
-    setShowOtherCharges(false);
   };
 
   return (
